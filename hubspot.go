@@ -28,6 +28,7 @@ type HubspotClient struct {
 	CompanyProperties *CompanyPropertiesService
 	Companies         *CompaniesService
 	Forms             *FormService
+	Emails            *EmailService
 }
 
 type service struct {
@@ -57,6 +58,7 @@ func NewHubspotClient(auth Authenticator) *HubspotClient {
 	r.ContactProperties = (*ContactPropertiesService)(&r.common)
 	r.CompanyProperties = (*CompanyPropertiesService)(&r.common)
 	r.Companies = (*CompaniesService)(&r.common)
+	r.Emails = (*EmailService)(&r.common)
 	//r.Forms = (*FormService)(&r.common)
 	r.Forms = &FormService{service: r.common}
 
@@ -112,7 +114,7 @@ func (c *HubspotClient) NewRequest(method, urlStr string, body interface{}) (*ht
 	}
 
 	if !strings.HasPrefix(urlStr, "/") {
-		return nil, fmt.Errorf("urlStr must have begin with a slash, but %q does not", urlStr)
+		return nil, fmt.Errorf("urlStr must begin with a slash, but %q does not", urlStr)
 	}
 
 	u, err := c.BaseURL.Parse(urlStr)
@@ -174,7 +176,8 @@ func (c *HubspotClient) Do(req *http.Request, v interface{}) error {
 	if err != nil {
 		return err
 	}
-
+	//body, err := ioutil.ReadAll(resp.Body)
+	//fmt.Printf("Body:%s\n", body)
 	if v != nil {
 		if w, ok := v.(io.Writer); ok {
 			io.Copy(w, resp.Body)

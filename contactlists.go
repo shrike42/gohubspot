@@ -2,7 +2,7 @@ package gohubspot
 
 import (
 	"fmt"
-	
+	"strconv"
 )
 
 type ContactListsService service
@@ -40,6 +40,12 @@ type ContactLists struct {
 	Page
 }
 
+type Contacts struct {
+	Lists   []ContactInList `json:"contacts"`
+	HasMore bool            `json:"has-more"`
+	Offset  int             `json:"vid-offset"`
+}
+
 type contactListsOptions struct {
 	listCount int
 	offset    int
@@ -52,9 +58,13 @@ func NewContactListOptions(listCount, offset int) *contactListsOptions {
 	return &contactListsOptions{listCount: listCount, offset: offset}
 }
 
-func (s *ContactListsService) GetContactLists() (*ContactLists, error) {
+func (s *ContactListsService) GetContactLists(cl *contactListsOptions) (*ContactLists, error) {
 
 	url := "/contacts/v1/lists"
+
+	// Add params
+	url += "/?count=" + strconv.Itoa(cl.listCount)
+	url += "&offset=" + strconv.Itoa(cl.offset)
 
 	req, err := s.client.Get(url)
 
@@ -96,4 +106,21 @@ func (s *ContactListsService) GetContactList(listId int) (*ContactList, error) {
 	list := new(ContactList)
 	err = s.client.Do(req, list)
 	return list, err
+}
+
+func (s *ContactListsService) GetContacts(cl *contactListsOptions, listId int) (*Contacts, error) {
+	url := fmt.Sprintf("/contacts/v1/lists/%d/contacts/all", listId)
+	// Add params
+	url += "/?count=" + strconv.Itoa(cl.listCount)
+	url += "&vidOffset=" + strconv.Itoa(cl.offset)
+	url += "&property=firstname"
+
+	req, err := s.client.Get(url)
+
+	if err != nil {
+		return nil, err
+	}
+	cs := new(Contacts)
+	err = s.client.Do(req, cs)
+	return cs, err
 }

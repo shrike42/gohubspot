@@ -7,7 +7,8 @@ func TestContactListsService_GetContactLists(t *testing.T) {
 	setup()
 	defer teardown()
 
-	lists, err := testclient.ContactLists.GetContactLists()
+	cl := NewContactListOptions(250, 0)
+	lists, err := testclient.ContactLists.GetContactLists(cl)
 
 	if err != nil {
 		t.Error(err)
